@@ -1,68 +1,257 @@
-# CodeIgniter 4 Application Starter
+# 🚀 Starter Kit REST API CodeIgniter 4
 
-## What is CodeIgniter?
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![PHP](https://img.shields.io/badge/PHP-%3E%3D%208.1-777BB4.svg?logo=php&logoColor=white)](https://www.php.net/)
+[![CodeIgniter](https://img.shields.io/badge/CodeIgniter-4.0-EF4223.svg?logo=codeigniter&logoColor=white)](https://codeigniter.com/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+A robust, production-ready **RESTful API Boilerplate** built with **CodeIgniter 4**.
+This project moves beyond the basic MVC structure, implementing a **Service Layer Architecture** to ensure scalability, maintainability, and clean code principles similar to robust Node.js/Java architectures.
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+---
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+## ✨ Features
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+- **🧠 Service Layer Architecture**: Business logic is separated from Controllers using Services.
+- **🛡️ Clean Data Entities**: Uses CI4 `Entities` for clean object-oriented data handling.
+- **🔒 JWT Authentication**: Secure, stateless authentication using `firebase/php-jwt`.
+- **🚦 Robust Middleware**:
+    - `JwtAuth`: Bearer token verification.
+    - `RoleCheck`: Role-based Access Control (RBAC).
+    - `RateLimiter`: Built-in throttling to prevent abuse.
+    - `Cors`: Configurable Cross-Origin Resource Sharing.
+- **🗄️ Database Agnostic**: Compatible with **MySQL** and **SQLite** using Migrations.
+- **🐳 Docker Ready**: Full containerization support with persistent volumes.
+- **📝 API Documentation**: Integrated **Swagger UI** (OpenAPI 3.0).
+- **🧪 Automated Testing**: Includes Python-based API test scripts.
+- **✨ Best Practices**: Input validation, centralized error handling, and standardized JSON responses.
 
-## Installation & updates
+---
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+## 🛠️ Project Structure
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+We follow a strict separation of concerns:
 
-## Setup
+```text
+app/
+├── Config/             # App Configuration (Routes, Auth, Database)
+├── Controllers/        # HTTP Layer: Handles Inputs, Validation, and Responses
+├── Entities/           # Data Layer: Represents Database Rows as Objects
+├── Filters/            # Middleware: JWT Auth, Roles, CORS, Rate Limits
+├── Helpers/            # Utilities: Standardized JSON Response Helper
+├── Models/             # Database Access: Query Builder & Connection
+├── Services/           # Business Logic: The "Brain" of the application
+├── Validation/         # Custom Validation Rules
+└── Views/              # Swagger UI HTML
+public/                 # Web Root (Index & Swagger YAML)
+```
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+---
 
-## Important Change with index.php
+## 🚀 Getting Started (Local Development)
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+**Recommended:** Run the project locally first to understand the flow before containerizing.
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+### Prerequisites
+- PHP >= 8.1
+- Composer
+- Python 3.x (for testing scripts)
 
-**Please** read the user guide for a better explanation of how CI4 works!
+### 1. Installation
 
-## Repository Management
+```bash
+# Clone the repository
+git clone https://github.com/mnabielap/starter-kit-restapi-codeigniter.git
+cd starter-kit-restapi-codeigniter
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+# Install PHP dependencies
+composer install
+```
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+### 2. Environment Setup
 
-## Server Requirements
+Copy the example environment file. By default, it is configured for **SQLite** (zero config).
 
-PHP version 8.1 or higher is required, with the following extensions installed:
+```bash
+cp env .env
+```
+*Note: If you want to use MySQL locally, edit `.env` and change `database.default.DBDriver` to `MySQLi`.*
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+### 3. Database Setup
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
+Run the migrations to create tables and the seeder to create the initial Admin account.
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+```bash
+# Create tables
+php spark migrate
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+# Seed Admin User (Email: admin@example.com / Pass: password123)
+php spark db:seed AdminSeeder
+```
+
+### 4. Run Server
+
+```bash
+php spark serve
+```
+The API is now running at `http://localhost:8080`.
+
+---
+
+## 🐳 Running with Docker (Production/Staging)
+
+This project separates the Application and Database into two containers communicating via a custom network.
+
+### 1. Preparation
+
+Create the network and persistent volumes so your data survives container restarts.
+
+```bash
+# Create Network
+docker network create restapi_codeigniter_network
+
+# Create Volumes
+docker volume create restapi_codeigniter_db_volume
+docker volume create restapi_codeigniter_media_volume
+```
+
+### 2. Configure Environment
+
+Create a `.env.docker` file. **Ensure there are no spaces around the `=` sign.**
+
+```ini
+# .env.docker
+CI_ENVIRONMENT=production
+app.baseURL=http://localhost:5005
+
+# Database Config (Connects to MySQL container)
+database.default.hostname=restapi-codeigniter-mysql
+database.default.database=starter_kit_db
+database.default.username=user
+database.default.password=userpassword
+database.default.DBDriver=MySQLi
+database.default.port=3306
+
+# Security
+JWT_SECRET=complex_secret_key_here
+```
+
+### 3. Start Database Container (MySQL)
+
+```bash
+docker run -d \
+  --name restapi-codeigniter-mysql \
+  --network restapi_codeigniter_network \
+  -e MYSQL_ROOT_PASSWORD=rootpassword \
+  -e MYSQL_DATABASE=starter_kit_db \
+  -e MYSQL_USER=user \
+  -e MYSQL_PASSWORD=userpassword \
+  -v restapi_codeigniter_db_volume:/var/lib/mysql \
+  mysql:8.0
+```
+
+### 4. Build & Run App Container
+
+This container runs on port **5005**. It automatically waits for the database to be ready and runs migrations on startup.
+
+```bash
+# Build Image
+docker build -t restapi-codeigniter-app .
+
+# Run Container
+docker run -d -p 5005:5005 \
+  --env-file .env.docker \
+  --network restapi_codeigniter_network \
+  -v restapi_codeigniter_db_volume:/var/www/html/writable \
+  -v restapi_codeigniter_media_volume:/var/www/html/writable/uploads \
+  --name restapi-codeigniter-container \
+  restapi-codeigniter-app
+```
+
+### 5. Initialize Admin User
+Since the MySQL database is new, create the admin user:
+
+```bash
+docker exec -it restapi-codeigniter-container php spark db:seed AdminSeeder
+```
+
+The API is now accessible at `http://localhost:5005`.
+
+---
+
+## 🕹️ Docker Management Cheat Sheet
+
+Useful commands for managing your containers.
+
+#### View Logs
+Check application logs (migrations, errors, access logs).
+```bash
+docker logs -f restapi-codeigniter-container
+```
+
+#### Stop Container
+```bash
+docker stop restapi-codeigniter-container
+```
+
+#### Restart Container
+```bash
+docker start restapi-codeigniter-container
+```
+
+#### Remove Container
+Must be stopped first.
+```bash
+docker rm restapi-codeigniter-container
+```
+
+#### Manage Volumes
+```bash
+# List volumes
+docker volume ls
+
+# ⚠️ DELETE VOLUME (PERMANENT DATA LOSS)
+docker volume rm restapi_codeigniter_db_volume
+```
+
+---
+
+## 🧪 Automated API Testing
+
+Forget Postman! We have included a suite of Python scripts to test every endpoint in a real-world scenario.
+
+### Setup
+1. Open `api_tests/utils.py`.
+2. Ensure `BASE_URL` matches your running server (e.g., `http://localhost:8080` or `http://localhost:5005`).
+
+### Running Tests
+Execute the scripts in order. Tokens are automatically saved to `api_tests/secrets.json` and reused by subsequent scripts.
+
+```bash
+# 1. Register a new user
+python api_tests/A1.auth_register.py
+
+# 2. Login as Admin (required for User CRUD)
+python api_tests/A2.auth_login.py
+
+# 3. Create a User via Admin
+python api_tests/B1.users_create.py
+
+# 4. Get All Users
+python api_tests/B2.users_get_all.py
+```
+
+---
+
+## 📚 API Documentation
+
+Interactive documentation is available via **Swagger UI**.
+
+*   **Local URL:** `http://localhost:8080/v1/docs`
+*   **Docker URL:** `http://localhost:5005/v1/docs`
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

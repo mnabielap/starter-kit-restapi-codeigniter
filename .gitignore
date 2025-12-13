@@ -128,3 +128,6 @@ _modules/*
 **/__pycache__
 
 **api_tests/*.json
+
+*.sqlite
+*.db

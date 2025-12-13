@@ -34,6 +34,10 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
+        'jwt'           => \App\Filters\JwtAuth::class,
+        'role'          => \App\Filters\RoleCheck::class,
+        'rateLimit'     => \App\Filters\RateLimiter::class,
+        'cors' => \App\Filters\Cors::class, 
     ];
 
     /**
@@ -72,11 +76,13 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
+            'cors',
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',
         ],
         'after' => [
+            'cors',
             // 'honeypot',
             // 'secureheaders',
         ],
