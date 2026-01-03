@@ -14,7 +14,7 @@ abstract class BaseController extends Controller
     /**
      * Instance of the main Request object.
      *
-     * @var CLIRequest|IncomingRequest
+     * @var CLIRequest|IncomingRequest|\stdClass
      */
     protected $request;
 

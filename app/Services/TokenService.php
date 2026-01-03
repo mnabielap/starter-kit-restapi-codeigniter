@@ -96,11 +96,11 @@ class TokenService
         return [
             'access' => [
                 'token'   => $accessToken,
-                'expires' => $accessTokenExpires->toDateTimeString(),
+                'expires' => $accessTokenExpires->format('c'), 
             ],
             'refresh' => [
                 'token'   => $refreshToken,
-                'expires' => $refreshTokenExpires->toDateTimeString(),
+                'expires' => $refreshTokenExpires->format('c'),
             ],
         ];
     }

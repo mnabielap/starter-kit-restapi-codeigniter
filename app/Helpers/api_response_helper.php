@@ -8,22 +8,19 @@ if (!function_exists('responseSuccess')) {
      * 
      * @param mixed $data The payload to return
      * @param int $statusCode HTTP Status code (default 200)
-     * @param string $message Optional message
+     * @param string $message Optional message (Not used in raw JSON output)
      */
     function responseSuccess($data = null, int $statusCode = 200, string $message = 'Success'): ResponseInterface
     {
         $response = service('response');
         
-        $body = [
-            'code'    => $statusCode,
-            'message' => $message,
-        ];
-
+        // If data is provided, return it as the JSON root
         if ($data !== null) {
-            $body['data'] = $data;
+            return $response->setJSON($data)->setStatusCode($statusCode);
         }
 
-        return $response->setJSON($body)->setStatusCode($statusCode);
+        // For 204 No Content or empty responses
+        return $response->setStatusCode($statusCode);
     }
 }
 
@@ -40,12 +37,10 @@ if (!function_exists('responseError')) {
         $response = service('response');
 
         $body = [
-            'code'    => $statusCode,
             'message' => $message,
         ];
 
         if ($errors !== null) {
-            // In production, you might want to hide stack traces for 500 errors
             if (ENVIRONMENT === 'production' && $statusCode === 500) {
                 $body['errors'] = 'Internal Server Error';
             } else {

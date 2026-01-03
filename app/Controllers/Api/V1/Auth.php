@@ -38,6 +38,9 @@ class Auth extends BaseController
 
         try {
             $body = $this->request->getJSON(true);
+            
+            $body['role'] = 'user';
+
             $user = $this->userService->createUser($body);
             $tokens = $this->tokenService->generateAuthTokens($user);
 
@@ -123,7 +126,6 @@ class Auth extends BaseController
             $this->emailService->sendResetPasswordEmail($body['email'], $resetToken);
             return responseSuccess(null, 204);
         } catch (Exception $e) {
-            // Standard security practice: don't reveal if email doesn't exist, but code here returns 404 if service throws it
             return responseError($e->getCode() ?: 500, $e->getMessage());
         }
     }
@@ -157,11 +159,7 @@ class Auth extends BaseController
     public function sendVerificationEmail()
     {
         try {
-            // User is injected into request by JwtAuth filter
             $user = $this->request->user; 
-            
-            // We need the full user entity, the filter might pass a generic object or partial
-            // In our filter implementation, it passes an object with ID or full entity
             $fullUser = $this->userService->getUserById($user->id);
 
             $verifyToken = $this->tokenService->generateVerifyEmailToken($fullUser);
