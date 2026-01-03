@@ -7,8 +7,8 @@ info:
     name: MIT
     url: https://github.com/mnabielap/starter-kit-restapi-codeigniter/blob/master/LICENSE
 servers:
-  - url: http://localhost:8080/v1
-    description: Local Development Server
+  - url: http://localhost/starter-kit-restapi-codeigniter/public/v1
+    description: XAMPP Server
 
 components:
   schemas:
