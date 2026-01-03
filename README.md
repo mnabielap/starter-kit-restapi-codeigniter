@@ -235,10 +235,10 @@ python api_tests/A1.auth_register.py
 python api_tests/A2.auth_login.py
 
 # 3. Create a User via Admin
-python api_tests/B1.users_create.py
+python api_tests/B1.user_create.py
 
 # 4. Get All Users
-python api_tests/B2.users_get_all.py
+python api_tests/B2.user_get_all.py
 ```
 
 ---

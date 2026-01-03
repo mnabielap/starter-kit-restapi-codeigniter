@@ -6,7 +6,7 @@ import time
 from urllib.parse import urlparse
 
 # --- CONFIGURATION constants ---
-BASE_URL = "http://localhost:8080/v1" # or "http://localhost/starter-kit-restapi-codeigniter/public/v1"
+BASE_URL = "http://localhost/starter-kit-restapi-codeigniter/public/v1" # or "http://localhost:8080/v1"
 CONFIG_FILE_BASE = "secrets.json"
 
 # --- HELPER: Config Management (Secrets) ---

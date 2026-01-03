@@ -25,11 +25,19 @@ components:
         role:
           type: string
           enum: [user, admin]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
       example:
-        id: 5ebac534954b54139806c112
+        id: "5ebac534954b54139806c112"
         email: fake@example.com
         name: fake name
         role: user
+        created_at: "2026-01-01T12:00:00+00:00"
+        updated_at: "2026-01-01T12:00:00+00:00"
 
     Token:
       type: object
@@ -41,7 +49,7 @@ components:
           format: date-time
       example:
         token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
-        expires: 2020-05-12T16:18:04.793Z
+        expires: "2020-05-12T16:18:04+00:00"
 
     AuthTokens:
       type: object
@@ -411,27 +419,35 @@ paths:
         - bearerAuth: []
       parameters:
         - in: query
-          name: name
+          name: search
           schema:
             type: string
-          description: User name
+          description: Search term for name, email, or id
+        - in: query
+          name: scope
+          schema:
+            type: string
+            enum: [all, name, email, id]
+            default: all
+          description: Search scope
         - in: query
           name: role
           schema:
             type: string
-          description: User role
+            enum: [user, admin]
+          description: Filter by user role
         - in: query
           name: sortBy
           schema:
             type: string
-          description: sort by query in the form of field:desc/asc (ex. name:asc)
+          description: sort by query in the form of field:desc/asc (ex. created_at:desc)
         - in: query
           name: limit
           schema:
             type: integer
             minimum: 1
           default: 10
-          description: Maximum number of users
+          description: Maximum number of users per page
         - in: query
           name: page
           schema:

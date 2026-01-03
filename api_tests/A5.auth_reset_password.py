@@ -1,20 +1,21 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-import utils
+from utils import send_and_print, BASE_URL
 
-# Placeholder token - in real scenario, this comes from the email link
-token = "dummy_token_from_email_link"
+print("--- RESET PASSWORD ---")
+
+mock_token = "PUT_VALID_TOKEN_HERE_FROM_LOGS" 
+
+url = f"{BASE_URL}/auth/reset-password?token={mock_token}"
 
 payload = {
     "password": "newpassword123"
 }
 
-# Request
-utils.send_and_print(
-    url=f"{utils.BASE_URL}/auth/reset-password?token={token}",
+response = send_and_print(
+    url=url,
     method="POST",
     body=payload,
-    headers={"Content-Type": "application/json"},
     output_file=f"{os.path.splitext(os.path.basename(__file__))[0]}.json"
 )

@@ -3,6 +3,7 @@
 namespace App\Entities;
 
 use CodeIgniter\Entity\Entity;
+use CodeIgniter\I18n\Time;
 
 class User extends Entity
 {
@@ -35,7 +36,6 @@ class User extends Entity
 
     /**
      * Remove sensitive data for JSON serialization.
-     * Note: CI4 automatically excludes protected properties, but explicit removal is safer.
      */
     public function toArray(bool $onlyChanged = false, bool $cast = true, bool $recursive = false): array
     {
@@ -47,6 +47,12 @@ class User extends Entity
         // Standardize ID
         if (isset($data['id'])) {
             $data['id'] = (string) $data['id'];
+        }
+
+        foreach (['created_at', 'updated_at', 'deleted_at'] as $dateField) {
+            if (isset($data[$dateField]) && $data[$dateField] instanceof Time) {
+                $data[$dateField] = $data[$dateField]->format('c'); // 2023-01-01T12:00:00+00:00
+            }
         }
 
         return $data;

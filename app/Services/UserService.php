@@ -17,6 +17,11 @@ class UserService
 
     public function createUser(array $userBody): User
     {
+        // Enforce role check if passed manually
+        if (isset($userBody['role']) && !in_array($userBody['role'], ['user', 'admin'])) {
+            throw new Exception('The role field must be one of: user,admin.', 400);
+        }
+
         if ($this->userModel->isEmailTaken($userBody['email'])) {
             throw new Exception('Email already taken', 400);
         }
@@ -25,12 +30,10 @@ class UserService
         
         // The Entity handles password hashing automatically via setPassword
         if (!$this->userModel->save($user)) {
-            // Collect validation errors from model
             $errors = implode(', ', $this->userModel->errors());
             throw new Exception($errors, 400);
         }
 
-        // Return the fresh user object with ID
         return $this->userModel->find($this->userModel->getInsertID());
     }
 
@@ -77,55 +80,87 @@ class UserService
     }
 
     /**
-     * Query users with pagination
-     * @param array $params (sortBy, limit, page, name, role)
+     * Query users with pagination, searching, scopes, and sorting.
+     * 
+     * @param array $params (search, scope, role, sortBy, limit, page)
      */
     public function queryUsers(array $params): array
     {
         $builder = $this->userModel->builder();
 
-        // Filtering
-        if (isset($params['name']) && $params['name']) {
-            $builder->like('name', $params['name']);
-        }
-        if (isset($params['role']) && $params['role']) {
+        // --- 1. Filter by Role ---
+        if (isset($params['role']) && !empty($params['role'])) {
             $builder->where('role', $params['role']);
         }
 
-        // Sorting
-        $sort = $params['sortBy'] ?? 'created_at:desc';
-        // Format: field:desc or field (default asc)
-        $sortParts = explode(':', $sort);
-        $sortField = $sortParts[0];
-        $sortDirection = $sortParts[1] ?? 'asc';
+        // --- 2. Search & Scopes ---
+        $search = $params['search'] ?? null;
+        $scope  = $params['scope'] ?? 'all';
 
-        $sortMapping = [
+        if ($search) {
+            // Apply grouping to ensure AND (Search OR Search) logic
+            $builder->groupStart();
+            
+            if ($scope === 'all') {
+                $builder->like('name', $search)
+                        ->orLike('email', $search)
+                        ->orWhere('id', $search);
+            } elseif ($scope === 'name') {
+                $builder->like('name', $search);
+            } elseif ($scope === 'email') {
+                $builder->like('email', $search);
+            } elseif ($scope === 'id') {
+                $builder->where('id', $search);
+            }
+
+            $builder->groupEnd();
+        }
+
+        // --- 3. Sorting ---
+        // Expected format: "field:direction" (e.g., "created_at:desc")
+        $sortParam = $params['sortBy'] ?? 'created_at:desc';
+        $parts = explode(':', $sortParam);
+        
+        $sortField = $parts[0];
+        $sortDirection = $parts[1] ?? 'asc';
+
+        // Allow-list for sorting columns
+        $allowedSorts = ['id', 'name', 'email', 'role', 'created_at', 'updated_at'];
+        
+        // Map camelCase to snake_case
+        $fieldMap = [
             'createdAt' => 'created_at',
             'updatedAt' => 'updated_at',
-            'id'        => 'id',
-            'name'      => 'name',
-            'email'     => 'email',
-            'role'      => 'role',
         ];
 
-        if (array_key_exists($sortField, $sortMapping)) {
-            $sortField = $sortMapping[$sortField];
+        if (array_key_exists($sortField, $fieldMap)) {
+            $sortField = $fieldMap[$sortField];
         }
-        
-        $builder->orderBy($sortField, $sortDirection);
 
-        // Pagination
+        if (in_array($sortField, $allowedSorts)) {
+            // Standard sorting (admin < user)
+            $builder->orderBy($sortField, $sortDirection);
+        } else {
+            // Default fallback
+            $builder->orderBy('created_at', 'desc');
+        }
+
+        // --- 4. Pagination ---
         $page = (int)($params['page'] ?? 1);
         $limit = (int)($params['limit'] ?? 10);
-        
-        // Clone builder for counting
+        $offset = ($page - 1) * $limit;
+
+        // Clone builder to get total count
         $countBuilder = clone $builder;
         $totalResults = $countBuilder->countAllResults();
+
+        // Apply pagination
+        $builder->limit($limit, $offset);
         
-        // Execute query
-        $results = $this->userModel->paginate($limit, 'default', $page);
+        // Get Result Objects (Entities)
+        $results = $builder->get()->getResult(User::class);
         
-        $totalPages = ceil($totalResults / $limit);
+        $totalPages = $limit > 0 ? ceil($totalResults / $limit) : 1;
 
         return [
             'results'      => $results,
